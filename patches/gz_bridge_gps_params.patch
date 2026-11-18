@@ -1,0 +1,158 @@
+diff --git a/src/modules/simulation/gz_bridge/GZBridge.cpp b/src/modules/simulation/gz_bridge/GZBridge.cpp
+index 3bbd170282..f7d1897f3d 100644
+--- a/src/modules/simulation/gz_bridge/GZBridge.cpp
++++ b/src/modules/simulation/gz_bridge/GZBridge.cpp
+@@ -689,16 +689,19 @@ float GZBridge::generate_wgn()
+ void GZBridge::addGpsNoise(double &latitude, double &longitude, double &altitude,
+ 			   float &vel_north, float &vel_east, float &vel_down)
+ {
++	const float pos_noise_amplitude = _sim_gz_gps_pnois.get();
++	const float vel_noise_amplitude = _sim_gz_gps_vnois.get();
++
+ 	_gps_pos_noise_n = _pos_markov_time * _gps_pos_noise_n +
+-			   _pos_random_walk * generate_wgn() * _pos_noise_amplitude -
++			   _pos_random_walk * generate_wgn() * pos_noise_amplitude -
+ 			   0.02f * _gps_pos_noise_n;
+ 
+ 	_gps_pos_noise_e = _pos_markov_time * _gps_pos_noise_e +
+-			   _pos_random_walk * generate_wgn() * _pos_noise_amplitude -
++			   _pos_random_walk * generate_wgn() * pos_noise_amplitude -
+ 			   0.02f * _gps_pos_noise_e;
+ 
+ 	_gps_pos_noise_d = _pos_markov_time * _gps_pos_noise_d +
+-			   _pos_random_walk * generate_wgn() * _pos_noise_amplitude * 1.5f -
++			   _pos_random_walk * generate_wgn() * pos_noise_amplitude * 1.5f -
+ 			   0.02f * _gps_pos_noise_d;
+ 
+ 	latitude += math::degrees((double)_gps_pos_noise_n / CONSTANTS_RADIUS_OF_EARTH);
+@@ -706,13 +709,13 @@ void GZBridge::addGpsNoise(double &latitude, double &longitude, double &altitude
+ 	altitude += (double)_gps_pos_noise_d;
+ 
+ 	_gps_vel_noise_n = _vel_markov_time * _gps_vel_noise_n +
+-			   _vel_noise_density * generate_wgn() * _vel_noise_amplitude;
++			   _vel_noise_density * generate_wgn() * vel_noise_amplitude;
+ 
+ 	_gps_vel_noise_e = _vel_markov_time * _gps_vel_noise_e +
+-			   _vel_noise_density * generate_wgn() * _vel_noise_amplitude;
++			   _vel_noise_density * generate_wgn() * vel_noise_amplitude;
+ 
+ 	_gps_vel_noise_d = _vel_markov_time * _gps_vel_noise_d +
+-			   _vel_noise_density * generate_wgn() * _vel_noise_amplitude * 1.2f;
++			   _vel_noise_density * generate_wgn() * vel_noise_amplitude * 1.2f;
+ 
+ 	vel_north += _gps_vel_noise_n;
+ 	vel_east += _gps_vel_noise_e;
+@@ -750,6 +753,11 @@ void GZBridge::navSatCallback(const gz::msgs::NavSat &msg)
+ 	// Apply noise model (based on ublox F9P)
+ 	addGpsNoise(latitude, longitude, altitude, vel_north, vel_east, vel_down);
+ 
++	// Lower the output rate by only publishing every Nth sample
++	if (++_gps_sample_count % math::max(_sim_gz_gps_div.get(), (int32_t)1) != 0) {
++		return;
++	}
++
+ 	// Device ID
+ 	device::Device::DeviceId id{};
+ 	id.devid_s.bus_type = device::Device::DeviceBusType::DeviceBusType_SIMULATION;
+@@ -764,8 +772,8 @@ void GZBridge::navSatCallback(const gz::msgs::NavSat &msg)
+ 		sensor_gps.fix_type = 3; // 3D fix
+ 		sensor_gps.s_variance_m_s = 0.4f;
+ 		sensor_gps.c_variance_rad = 0.1f;
+-		sensor_gps.eph = 0.9f;
+-		sensor_gps.epv = 1.78f;
++		sensor_gps.eph = _sim_gz_gps_eph.get();
++		sensor_gps.epv = _sim_gz_gps_epv.get();
+ 		sensor_gps.hdop = 0.7f;
+ 		sensor_gps.vdop = 1.1f;
+ 
+diff --git a/src/modules/simulation/gz_bridge/GZBridge.hpp b/src/modules/simulation/gz_bridge/GZBridge.hpp
+index f821372034..b8aca614a8 100644
+--- a/src/modules/simulation/gz_bridge/GZBridge.hpp
++++ b/src/modules/simulation/gz_bridge/GZBridge.hpp
+@@ -188,15 +188,19 @@ private:
+ 	float _gps_vel_noise_n = 0.0f;
+ 	float _gps_vel_noise_e = 0.0f;
+ 	float _gps_vel_noise_d = 0.0f;
+-	const float _pos_noise_amplitude = 0.8f;    // Position noise amplitude [m]
++	uint32_t _gps_sample_count = 0;
+ 	const float _pos_random_walk = 0.01f;       // Position random walk coefficient
+ 	const float _pos_markov_time = 0.95f;       // Position Markov process coefficient
+-	const float _vel_noise_amplitude = 0.05f;   // Velocity noise amplitude [m/s]
+ 	const float _vel_noise_density = 0.2f;      // Velocity noise process density
+ 	const float _vel_markov_time = 0.85f;       // Velocity Markov process coefficient
+ 
+ 	DEFINE_PARAMETERS(
+ 		(ParamInt<px4::params::SIM_GPS_USED>) _sim_gps_used,
++		(ParamFloat<px4::params::SIM_GZ_GPS_PNOIS>) _sim_gz_gps_pnois,
++		(ParamFloat<px4::params::SIM_GZ_GPS_VNOIS>) _sim_gz_gps_vnois,
++		(ParamFloat<px4::params::SIM_GZ_GPS_EPH>) _sim_gz_gps_eph,
++		(ParamFloat<px4::params::SIM_GZ_GPS_EPV>) _sim_gz_gps_epv,
++		(ParamInt<px4::params::SIM_GZ_GPS_DIV>) _sim_gz_gps_div,
+ 		(ParamInt<px4::params::SIM_GZ_EN_LIDAR>) _sim_gz_en_lidar,
+ 		(ParamInt<px4::params::SIM_GZ_EN_FLOW>) _sim_gz_en_flow,
+ 		(ParamInt<px4::params::SIM_GZ_EN_ASPD>) _sim_gz_en_aspd,
+diff --git a/src/modules/simulation/gz_bridge/parameters.yaml b/src/modules/simulation/gz_bridge/parameters.yaml
+index 4edca88ca3..5b22d83b3b 100644
+--- a/src/modules/simulation/gz_bridge/parameters.yaml
++++ b/src/modules/simulation/gz_bridge/parameters.yaml
+@@ -56,6 +56,60 @@ parameters:
+         1: Enabled
+       default: 1
+       reboot_required: true
++    SIM_GZ_GPS_PNOIS:
++      description:
++        short: Simulated GPS position noise amplitude
++        long: |-
++          Scales the correlated (Gauss-Markov) position noise added to the
++          Gazebo NavSat sensor. The resulting horizontal standard deviation
++          is about 0.027 times this value.
++      type: float
++      default: 0.8
++      min: 0.0
++      max: 200.0
++      decimal: 2
++      unit: m
++    SIM_GZ_GPS_VNOIS:
++      description:
++        short: Simulated GPS velocity noise amplitude
++        long: |-
++          Scales the correlated (Gauss-Markov) velocity noise added to the
++          Gazebo NavSat sensor. The resulting horizontal standard deviation
++          is about 0.38 times this value.
++      type: float
++      default: 0.05
++      min: 0.0
++      max: 10.0
++      decimal: 3
++      unit: m/s
++    SIM_GZ_GPS_EPH:
++      description:
++        short: Simulated GPS reported horizontal accuracy
++      type: float
++      default: 0.9
++      min: 0.01
++      max: 100.0
++      decimal: 2
++      unit: m
++    SIM_GZ_GPS_EPV:
++      description:
++        short: Simulated GPS reported vertical accuracy
++      type: float
++      default: 1.78
++      min: 0.01
++      max: 100.0
++      decimal: 2
++      unit: m
++    SIM_GZ_GPS_DIV:
++      description:
++        short: Simulated GPS rate divider
++        long: |-
++          Only every Nth sample of the Gazebo NavSat sensor is published,
++          e.g. 6 turns the 30 Hz of the x500 model into 5 Hz.
++      type: int32
++      default: 1
++      min: 1
++      max: 300
+ - group: UAVCAN
+   definitions:
+     SIM_GZ_EN:

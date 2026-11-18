@@ -1,0 +1,49 @@
+# Texas Instruments IWR6843AOPEVM (antenna on package), the five short-range radars of the
+# power-line avoidance paper (docs/paper_malle2026_notes.md): 60-64 GHz, the out-of-box 3D firmware
+# at 10 Hz. From the paper: field of view measured in the lab with a corner reflector:
+#
+#   mounted as        azimuth   elevation
+#   left, right         75 deg    104 deg
+#   top, bottom         76 deg    106-108 deg
+#   rear                75 deg    135 deg
+#
+# (the data sheet promises 120 x 120 deg; the authors suspect part of the shortfall is the
+# corner reflector). Power lines are detected from about 7 m; range error as for the ISK: sigma
+# 2.79 cm. Maximum range, angle accuracy and points per frame are this example's estimates.
+# This profile uses the left / right figures; the paper mounts them yawed 15 deg towards the
+# front, so their boresights are at +-75 deg from the direction of flight.
+# Apply with: scripts/make_radar_model.py profiles/iwr6843aop.yaml
+description: 75 x 104 deg short-range 3D mmWave point-cloud radar (IWR6843AOP, as in the paper)
+
+sensor:
+  az_min_deg: -37.5
+  az_max_deg: 37.5
+  az_step_deg: 1
+  el_min_deg: -52
+  el_max_deg: 52
+  el_step_deg: 2
+  range_min: 0.2
+  range_max: 20           # estimate: not stated in the paper
+  rate_hz: 10
+
+display:
+  fov_range: 7            # m, "from about 7 m" (paper)
+
+model:
+  antenna: sector
+  min_range: 0.3
+  range_bin: 0.1
+  angle_cell: 8           # deg (estimate: coarser than the ISK)
+  snr_ref: 14             # dB (estimate), set with radar_model.wire_detections: a 20 mm wire seen square-on in every
+                          # frame out to 8 m, 60 % at 10 m, gone by 12 m (the paper: "from about 7 m"); the 1.2 mm
+                          # steel wire within about 3 m. Was 25 before the wire model, which saw 20 mm past 15 m.
+  range_ref: 7
+  snr_threshold: 12
+  snr_sigma: 3
+  specular: 2
+  sigma_range: 0.028
+  sigma_az: 3
+  sigma_el: 4
+  sigma_velocity: 0.05    # m/s (estimate: half the velocity resolution of a typical cfg)
+  per_range_bin: 2
+  max_points: 160

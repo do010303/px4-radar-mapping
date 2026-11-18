@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <world name="survey_site">
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+    <scene>
+      <grid>false</grid>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>true</shadows>
+    </scene>
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1 1</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>500 500</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>0 0 0 0 -0 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+    <light name="sunUTC" type="directional">
+      <pose>0 0 500 0 -0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1</intensity>
+      <direction>0.001 0.625 -0.78</direction>
+      <diffuse>0.904 0.904 0.904 1</diffuse>
+      <specular>0.271 0.271 0.271 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <!-- Survey site for radar mapping (docs/survey_mapping_plan.md, phase 0); the answers, for scoring,
+         are in survey_site.truth.yaml. A power line along x between two pylons at x = 15 and 45 (y = 0):
+         three 20 mm phase wires at y = -3, 0, 3 and z = 10 m and a 10 mm earth wire at z = 12 m, straight
+         and hidden from the radar rays (visibility flag 2; scripts/radar_array.py gives them the radar
+         cross section of a thin cylinder). Beside it a house and a wall (their broad faces towards the survey lines), a lamp post and a tree
+         trunk (y = -10.75, midway between the line at y = -14 and the pass beside the power line at y = -7.5).
+         scripts/survey_mission.py flies lines along x at y = -14 and 14, passes along the line (above it and
+         at y = 8 and -7.5) and a circle around (30, 0): every object stays at least 3 m from the flight path. The vehicle spawns at the origin facing +X. -->
+    <model name="pylon_a">
+      <static>true</static>
+      <pose>15 0 6.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.2</radius><length>13</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.2</radius><length>13</length></cylinder></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="pylon_b">
+      <static>true</static>
+      <pose>45 0 6.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.2</radius><length>13</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.2</radius><length>13</length></cylinder></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="crossarm_a">
+      <static>true</static>
+      <pose>15 0 11 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.15 6.4 0.15</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.15 6.4 0.15</size></box></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="crossarm_b">
+      <static>true</static>
+      <pose>45 0 11 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.15 6.4 0.15</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.15 6.4 0.15</size></box></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_a">
+      <static>true</static>
+      <pose>30 -3 10 0 1.570796 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.01</radius><length>30</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.01</radius><length>30</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_b">
+      <static>true</static>
+      <pose>30 0 10 0 1.570796 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.01</radius><length>30</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.01</radius><length>30</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_c">
+      <static>true</static>
+      <pose>30 3 10 0 1.570796 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.01</radius><length>30</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.01</radius><length>30</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_earth">
+      <static>true</static>
+      <pose>30 0 12 0 1.570796 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.005</radius><length>30</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.005</radius><length>30</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="house">
+      <static>true</static>
+      <pose>25 7 2 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>6 4 4</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>6 4 4</size></box></geometry>
+          <material>
+            <ambient>0.6 0.5 0.4 1</ambient>
+            <diffuse>0.6 0.5 0.4 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wall">
+      <static>true</static>
+      <pose>40 7 3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>5 0.4 6</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>5 0.4 6</size></box></geometry>
+          <material>
+            <ambient>0.7 0.7 0.7 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="lamp_post">
+      <static>true</static>
+      <pose>35 -10.75 4 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.1</radius><length>8</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.1</radius><length>8</length></cylinder></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="trunk">
+      <static>true</static>
+      <pose>20 -10.75 5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>10</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>10</length></cylinder></geometry>
+          <material>
+            <ambient>0.4 0.25 0.1 1</ambient>
+            <diffuse>0.4 0.25 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg> 8.546163739800146</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+  </world>
+</sdf>

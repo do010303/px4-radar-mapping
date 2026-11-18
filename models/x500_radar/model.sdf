@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <model name="x500_radar">
+    <include merge="true">
+      <uri>model://x500</uri>
+    </include>
+    <!-- Under the body where x500_gimbal carries its camera (12 cm below base_link), facing +X.
+         Whichever profile models/radar_mmwave was last built from is the one mounted
+         (profiles/iwr6843isk.yaml: the paper's long-range forward radar). -->
+    <include merge="true">
+      <uri>model://radar_mmwave</uri>
+      <pose relative_to="base_link">0.085 0 -0.12 0 0 0</pose>
+    </include>
+    <joint name="radar_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>radar_link</child>
+    </joint>
+  </model>
+</sdf>

@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <world name="power_line_course">
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+    <scene>
+      <grid>false</grid>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>true</shadows>
+    </scene>
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1 1</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>500 500</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>0 0 0 0 -0 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+    <light name="sunUTC" type="directional">
+      <pose>0 0 500 0 -0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1</intensity>
+      <direction>0.001 0.625 -0.78</direction>
+      <diffuse>0.904 0.904 0.904 1</diffuse>
+      <specular>0.271 0.271 0.271 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <!-- Power line after the avoidance paper (docs/paper_malle2026_notes.md): two pylons 35 m apart at
+         x = 30 (y = -17.5 and 17.5), a three-phase line of 20 mm wires 3 m apart on a cross-arm at 11 m,
+         wires at x = 27, 30 and 33 m, z = 10 m, plus a 10 mm earth wire at z = 12 m. The wires
+         are straight (no sag) and their visuals carry visibility flag 2, which the radar rays ignore:
+         scripts/radar_array.py gives them the radar cross section of a thin cylinder instead
+         (radar_model.wire_detections), as the ray grid cannot show something this thin.
+         The vehicle spawns at the origin facing +X. -->
+    <!-- A 30 cm trunk 2.5 m left of the line of flight along y = 0 at x = 14: outside the emergency-brake
+         cone of scripts/avoid_node.py (23 deg off at 6 m), inside its avoidance sphere, so the tangent
+         rule has something to go around before the wires. (At 0.7 m off, inside the cone, the vehicle
+         just stops in front of it.) -->
+    <model name="trunk">
+      <static>true</static>
+      <pose>14 2.5 7.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.15</radius><length>15</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.15</radius><length>15</length></cylinder></geometry>
+          <material>
+            <ambient>0.4 0.25 0.1 1</ambient>
+            <diffuse>0.4 0.25 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="pylon_a">
+      <static>true</static>
+      <pose>30 -17.5 6.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.2</radius><length>13</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.2</radius><length>13</length></cylinder></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="pylon_b">
+      <static>true</static>
+      <pose>30 17.5 6.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.2</radius><length>13</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.2</radius><length>13</length></cylinder></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="crossarm_a">
+      <static>true</static>
+      <pose>30 -17.5 11 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>6 0.15 0.15</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>6 0.15 0.15</size></box></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="crossarm_b">
+      <static>true</static>
+      <pose>30 17.5 11 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>6 0.15 0.15</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>6 0.15 0.15</size></box></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_a">
+      <static>true</static>
+      <pose>27 0 10 1.570796 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.01</radius><length>35</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.01</radius><length>35</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_b">
+      <static>true</static>
+      <pose>30 0 10 1.570796 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.01</radius><length>35</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.01</radius><length>35</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_c">
+      <static>true</static>
+      <pose>33 0 10 1.570796 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.01</radius><length>35</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.01</radius><length>35</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_earth">
+      <static>true</static>
+      <pose>30 0 12 1.570796 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.005</radius><length>35</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.005</radius><length>35</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <!-- The obstacle course after the power line (scripts/avoid_node.py, goal 98 0 10): each one tries a
+         different case of the avoidance rules, at the flight height of 10 m.
+           wall_low      x 45: wall across the path, top at 9 m, 1 m below it            -> over
+           wire_beam     x 55: pipe across the path at 11.5 m, 1.5 m above it (r 10 cm)  -> under
+           pole_left     x 64: pole 2.2 m left of the path, 18 m tall                     -> past (outside the 2 m corridor)
+           pole_right    x 68: pole 2.2 m right of the path                               -> past
+           block_right   x 76: block from 1 m to 4 m right of the path, 12 m tall         -> over (in the corridor)
+           wire_low      x 86: 10 mm wire across the path at 8.8 m, 1.2 m below it         -> over -->
+    <model name="wall_low">
+      <static>true</static>
+      <pose>45 0 4.5 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1 8 9</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1 8 9</size></box></geometry>
+          <material>
+            <ambient>0.6 0.55 0.5 1</ambient>
+            <diffuse>0.6 0.55 0.5 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_beam">
+      <static>true</static>
+      <pose>55 0 11.5 1.570796 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.1</radius><length>12</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.1</radius><length>12</length></cylinder></geometry>
+          <material>
+            <ambient>0.3 0.3 0.35 1</ambient>
+            <diffuse>0.3 0.3 0.35 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="pole_left">
+      <static>true</static>
+      <pose>64 2.2 9 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.2</radius><length>18</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.2</radius><length>18</length></cylinder></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="pole_right">
+      <static>true</static>
+      <pose>68 -2.2 9 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.2</radius><length>18</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><cylinder><radius>0.2</radius><length>18</length></cylinder></geometry>
+          <material>
+            <ambient>0.45 0.45 0.45 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="block_right">
+      <static>true</static>
+      <pose>76 -2.5 6 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>4 3 12</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>4 3 12</size></box></geometry>
+          <material>
+            <ambient>0.55 0.6 0.65 1</ambient>
+            <diffuse>0.55 0.6 0.65 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="wire_low">
+      <static>true</static>
+      <pose>86 0 8.8 1.570796 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><cylinder><radius>0.005</radius><length>20</length></cylinder></geometry>
+        </collision>
+        <visual name="visual">
+        <visibility_flags>2</visibility_flags>
+          <geometry><cylinder><radius>0.005</radius><length>20</length></cylinder></geometry>
+          <material>
+            <ambient>0.05 0.05 0.05 1</ambient>
+            <diffuse>0.05 0.05 0.05 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg> 8.546163739800146</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+  </world>
+</sdf>

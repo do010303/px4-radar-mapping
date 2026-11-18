@@ -1,0 +1,13 @@
+# Pass limits for scripts/hover_test.py: minimum share of frames in which each
+# obstacle of radar_hover.sdf must be detected. Obstacles not listed are still
+# used to label detections, but not scored.
+wall: 0.95
+pole: 0.90
+low_box: 0.95
+overhead_bar: 0.30        # 10 cm thick
+bar_post_a: 0.50          # 8 cm thick
+bar_post_b: 0.50
+rear_box: 0.95
+side_pole: 0.90
+far_wall_30m: 0.80
+far_wall_45m: 0.50

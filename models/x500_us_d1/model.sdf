@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <!-- Three US-D1 radars on the nose, yawed +45 (left), 0 and -45 deg (right): each has a
+       43 deg horizontal field of view, together about 130 deg. Build the radar models with
+       scripts/make_us_d1_x3.sh. PX4 rotations: left is ROTATION_YAW_315 (7), ahead
+       ROTATION_FORWARD_FACING (0), right ROTATION_YAW_45 (1). -->
+  <model name="x500_us_d1">
+    <include merge="true">
+      <uri>model://x500</uri>
+    </include>
+    <include merge="true">
+      <uri>model://radar_us_d1_left</uri>
+      <pose relative_to="base_link">0.10 0.05 -0.06 0 0 0.785398</pose>
+    </include>
+    <include merge="true">
+      <uri>model://radar_us_d1_center</uri>
+      <pose relative_to="base_link">0.12 0 -0.06 0 0 0</pose>
+    </include>
+    <include merge="true">
+      <uri>model://radar_us_d1_right</uri>
+      <pose relative_to="base_link">0.10 -0.05 -0.06 0 0 -0.785398</pose>
+    </include>
+    <joint name="radar_us_d1_left_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>radar_link_us_d1_left</child>
+    </joint>
+    <joint name="radar_us_d1_center_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>radar_link_us_d1_center</child>
+    </joint>
+    <joint name="radar_us_d1_right_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>radar_link_us_d1_right</child>
+    </joint>
+  </model>
+</sdf>

@@ -1,0 +1,62 @@
+# Ainstein US-D1, 24 GHz radar altimeter (docs/radar_survey.md group F), mounted
+# facing forward as an obstacle sensor. From the user manual D00.02.05 (2023-04-03):
+# 24 GHz, 190 MHz bandwidth, 0.5-50 m, precision 6 cm (< 1 m) and 4 cm (> 1 m),
+# field of view 43 x 30 deg (43 deg along the 108 mm side, Figure 4), 100 Hz,
+# 110 g, 108 x 79 x 20 mm, EIRP at most 25 dBm. Output: one altitude and one SNR
+# per packet; an SNR of 13 dB or less is erroneous (manual 2.4). Everything else is
+# this example's estimate (marked "estimate"). The manual designs it to look
+# DOWN (2.1, 3.5): forward-facing is outside what the manufacturer specifies.
+# Apply with: scripts/make_radar_model.py profiles/us_d1.yaml
+description: 43 x 30 deg single-beam K-band radar altimeter, 0.5-50 m (Ainstein US-D1)
+
+sensor:
+  # Scanned out to the full beamwidth so the beam edges and sidelobes are in the
+  # data; the drawn field of view is half the beamwidth (display below).
+  az_min_deg: -43
+  az_max_deg: 43
+  az_step_deg: 1
+  el_min_deg: -30
+  el_max_deg: 30
+  el_step_deg: 1
+  range_min: 0.5
+  range_max: 50
+  rate_hz: 100
+
+display:
+  az_deg: 21.5            # half the 43 deg beamwidth
+  el_deg: 15
+  fov_range: 50
+
+body:
+  mass: 0.110
+  size: [0.020, 0.108, 0.079]   # depth x width x height: 108 mm wide, so 43 deg is horizontal
+
+model:
+  antenna: beam
+  beam_az: 43             # deg; the manual does not say at which power level
+  beam_el: 30
+  sidelobe_db: 25         # estimate
+  # The manual does not say which return the altimeter reports when the beam holds
+  # several; an altimeter normally reports the strongest.
+  output: altimeter
+  pick: strongest
+  min_range: 0.5          # m, manual
+  range_bin: 0.79         # m, c / 2B with the 190 MHz bandwidth
+  angle_cell: 5           # deg, only groups rays into cells; the sensor has no angular resolution
+  # Link budget, same method and assumptions as profiles/usharp_patch.yaml.
+  eirp_dbm: 25            # manual: maximum transmit power (EIRP); the actual value is not stated
+  # Directivity of a 43 x 30 deg beam is 41253 / (43 * 30) = 32 = 15 dBi; 13 dBi after
+  # an efficiency of ~0.6 (estimate).
+  rx_gain_dbi: 13
+  wavelength_mm: 12.4
+  noise_dbm: -149         # estimate
+  loss_db: 6              # estimate
+  reflectivity_db: -10    # estimate
+  snr_threshold: 13       # dB, manual 2.4: 13 dB or lower is erroneous
+  snr_sigma: 3            # dB, estimate
+  specular: 2
+  sigma_range: 0.04       # m, manual precision taken as 1 sigma (estimate)
+  sigma_az: 0
+  sigma_el: 0
+  per_range_bin: 1
+  max_points: 1

@@ -1,0 +1,17 @@
+# The answers for scoring a map of worlds/survey_site.sdf (docs/survey_mapping_plan.md): every object, in
+# the world frame (x ahead of the spawn, y left, z up; m). Must match the SDF.
+#   pole:  vertical cylinder, base centre p and height h, radius r
+#   wire:  straight cylinder from p0 to p1, radius r
+#   box:   centre c, size (x, y, z)
+pylon_a:    {type: pole, p: [15, 0, 0], h: 13, r: 0.2}
+pylon_b:    {type: pole, p: [45, 0, 0], h: 13, r: 0.2}
+crossarm_a: {type: box, c: [15, 0, 11], size: [0.15, 6.4, 0.15]}
+crossarm_b: {type: box, c: [45, 0, 11], size: [0.15, 6.4, 0.15]}
+wire_a:     {type: wire, p0: [15, -3, 10], p1: [45, -3, 10], r: 0.01}
+wire_b:     {type: wire, p0: [15, 0, 10], p1: [45, 0, 10], r: 0.01}
+wire_c:     {type: wire, p0: [15, 3, 10], p1: [45, 3, 10], r: 0.01}
+wire_earth: {type: wire, p0: [15, 0, 12], p1: [45, 0, 12], r: 0.005}
+house:      {type: box, c: [25, 7, 2], size: [6, 4, 4]}
+wall:       {type: box, c: [40, 7, 3], size: [5, 0.4, 6]}
+lamp_post:  {type: pole, p: [35, -10.75, 0], h: 8, r: 0.1}
+trunk:      {type: pole, p: [20, -10.75, 0], h: 10, r: 0.15}

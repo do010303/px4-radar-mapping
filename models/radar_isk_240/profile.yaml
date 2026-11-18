@@ -1,0 +1,47 @@
+# Texas Instruments IWR6843ISK, the long-range forward radar of the power-line avoidance paper
+# (docs/paper_malle2026_notes.md; Malle & Ebeid, arXiv:2602.03229): 60-64 GHz, 3 RX / 4 TX, the
+# out-of-box 3D firmware at 10 Hz, a point cloud with x, y, z, radial velocity and SNR.
+# From the paper: measured field of view 122 deg azimuth x 41 deg elevation (lab, corner
+# reflector); range error against a corner reflector at 1 m: mean 6.07 cm, sigma 2.79 cm;
+# power lines are detected beyond 10 m.
+# From the radar configuration the authors fly (github.com/nhma20/xwr6843_ros2,
+# cfg_files/xwr6843ISK_profile_10Hz_v2.cfg, used for the front radar by spherical-radar-drone's
+# launch file): range resolution 0.122 m, detection range 0.2-30 m (cfarFovCfg), azimuth resolution
+# 15 deg, CFAR threshold 15 dB, 100 ms frames. Neither states the angle accuracy or the points per
+# frame: those, and snr_ref, are this example's estimates (marked "estimate").
+# Mount it facing the direction of flight.
+# Apply with: scripts/make_radar_model.py profiles/iwr6843isk.yaml (or scripts/make_isk_x3.sh)
+description: 122 x 41 deg forward 3D mmWave point-cloud radar (IWR6843ISK, as in the paper)
+
+sensor:
+  az_min_deg: -61
+  az_max_deg: 61
+  az_step_deg: 1
+  el_min_deg: -20.5
+  el_max_deg: 20.5
+  el_step_deg: 1
+  range_min: 0.2
+  range_max: 30           # cfg: cfarFovCfg 0.2-30 m
+  rate_hz: 10             # paper and cfg (frameCfg 100 ms)
+
+display:
+  fov_range: 10           # m, "lines are detected beyond 10 m" (paper)
+
+model:
+  antenna: sector
+  min_range: 0.3          # m, the vehicle's own frame; also the driver's minimum_range in the authors' launch
+  range_bin: 0.122        # m, cfg
+  angle_cell: 15          # deg, cfg: azimuth resolution 15 deg (elevation is no better)
+  snr_ref: 28             # dB for a surface filling a whole cell at range_ref (estimate). Set so that a 20 mm
+                          # wire seen square-on is detected in nearly every frame out to 15 m (20 % at 20 m),
+                          # a 10 mm one out to about 13 m, the 1.2 mm steel wire within about 7 m: the paper's
+                          # "beyond 10 m", and the 16 m front detection range of the authors' offboard_control.cpp
+  range_ref: 10           # m
+  snr_threshold: 15       # dB, cfg: CFAR range and Doppler thresholds 15 dB
+  snr_sigma: 3            # dB (estimate)
+  specular: 2
+  sigma_range: 0.028      # m, paper: sigma 2.79 cm (the 6.07 cm mean error is not modelled)
+  sigma_az: 3             # deg (estimate, a fifth of the 15 deg resolution)
+  sigma_el: 5             # deg (estimate: elevation is worse than azimuth on this antenna)
+  per_range_bin: 3        # directions resolved in one range bin (estimate)
+  max_points: 200         # per frame (estimate)
