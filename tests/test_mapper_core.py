@@ -12,7 +12,11 @@ warnings.filterwarnings("ignore", message="A NumPy version")
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 import onboard_mapper as om  # noqa: E402
 
-mc = pytest.importorskip("mapper_core", reason="cpp/build.sh not run")
+try:
+    import mapper_core as mc  # noqa: E402
+except ImportError:            # a module-level skip would skip the whole session under pytest 6 + ROS plugins
+    mc = None
+pytestmark = pytest.mark.skipif(mc is None, reason="cpp/build.sh not run")
 
 
 def test_voxel_map_same_reports_and_map():
